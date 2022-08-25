@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.List;
 
 /*
@@ -11,10 +12,85 @@ public class App {
         this.itemRepository = itemRepository;
         this.salesPromotionRepository = salesPromotionRepository;
     }
+    List<SalesPromotion> promo = salesPromotionRepository.findAll();
+    List<Item> items = itemRepository.findAll();
+
+    List<Item> discounted;
+
+    List<reciept> reciepts;
+
 
     public String bestCharge(List<String> inputs) {
-        //TODO: write code here
+        for (String order : inputs)
+        {
 
-        return null;
+            reciept reciept = new reciept(Integer.parseInt(order.substring(11)),
+                    0,
+                    ((Item) items.stream().filter(item -> item.getId().equals(order.substring(0,7)))));
+            reciepts.add(reciept);
+        }
+        double discount = 0;
+        double total=0;
+        double noDtotal=0;
+        for (reciept reciept : reciepts)
+        {
+            if (promo.stream().anyMatch(salesPromotion ->  salesPromotion.getRelatedItems().contains(reciept.getItem().getId()))) {
+                reciept.setfPrice(reciept.getItem().getPrice() * reciept.getQty()*.5);
+                discount += reciept.getItem().getPrice() * reciept.getQty() *.5;
+                discounted.add(reciept.getItem());
+                total+= reciept.getItem().getPrice() * reciept.getQty() *.5;
+                noDtotal+=reciept.getItem().getPrice() * reciept.getQty();
+            }
+            else
+            {
+                reciept.setfPrice(reciept.getItem().getPrice());
+                total+=reciept.getItem().getPrice() * reciept.getQty();
+                noDtotal+=reciept.getItem().getPrice() * reciept.getQty();
+            }
+        }
+        String print;
+        print = "============= Order details =============\n";
+        for(reciept reciept : reciepts) {
+            print += (reciept.getItem().getName() + " x " + reciept.getQty() + " = " + reciept.fPrice * reciept.getQty() + "yuan\n");
+        }
+        print+="-----------------------------------\n";
+        if (discount >=6)
+        {
+            print+="Promotion used:\n";
+            print+="Half price for certain dishes (";
+            Iterator<Item> Idiscounted = discounted.iterator();
+            while (Idiscounted.hasNext())
+            {
+                Item item = Idiscounted.next();
+                if (!Idiscounted.hasNext())
+                {
+                    print+=item.getName()+"), ";
+                }
+                else
+                {
+                    print+=item.getName()+",";
+                }
+            }
+            print+="saving " +discount+" yuan";
+            print+="-----------------------------------\n";
+            print+="Total：" + total+" yuan\n";
+            print+="===================================";
+
+
+        } else if (noDtotal>30)
+        {
+            print+="Promotion used:\n";
+            print+="30-6 yuan，saving 6 yuan\n";
+            print+="-----------------------------------\n";
+            print+="Total：" + (noDtotal-6)+" yuan\n";
+            print+="===================================";
+        }
+        else
+        {
+            print+="Total：" +noDtotal+" yuan\n";
+            print+="===================================";
+        }
+        System.out.println(print);
+        return print;
     }
 }
